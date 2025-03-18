@@ -12,9 +12,9 @@ class PathTest {
 
     @Before
     fun setUp(){
-        verticalPath = Path(0f, 0f, 5f, Color.Red, 5f)
-        positivelyAngledPath = Path(0.5f, 0f, 4f, Color.Red, 5f)
-        negativelyAngledPath = Path(-0.5f, 0f, 9f, Color.Red, 5f)
+        verticalPath = Path(0f, 0f, Color.Red, 5f)
+        positivelyAngledPath = Path(0.5f, 0f, Color.Red, 5f)
+        negativelyAngledPath = Path(-0.5f, 0f, Color.Red, 5f)
     }
 
     @Test

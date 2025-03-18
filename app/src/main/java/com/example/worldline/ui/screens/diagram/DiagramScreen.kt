@@ -1,4 +1,4 @@
-package com.example.wordline.ui.screens.diagram
+package com.example.worldline.ui.screens.diagram
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -28,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -73,12 +72,14 @@ fun DiagramScreen(
                     }
                 }
         ) {
-            drawLine(
-                start = Offset(x = size.width, y = 0f),
-                end = Offset(x = 0f, y = size.height),
-                color = Color.Red,
-                strokeWidth = 5f
-            )
+            for (instruction in viewModel.drawInstructions){ // TODO: drawline is temporary. Should use path probably
+                drawLine(
+                    start = instruction.startOffset,
+                    end = instruction.endOffset,
+                    color = instruction.color,
+                    strokeWidth = instruction.width
+                )
+            }
         }
         Card(
             elevation = CardDefaults.cardElevation(0.dp),

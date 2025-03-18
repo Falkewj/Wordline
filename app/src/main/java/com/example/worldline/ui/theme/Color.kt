@@ -1,4 +1,4 @@
-package com.example.wordline.ui.theme
+package com.example.worldline.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

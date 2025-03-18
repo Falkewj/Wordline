@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Wordline"
+rootProject.name = "Worldline"
 include(":app")
  

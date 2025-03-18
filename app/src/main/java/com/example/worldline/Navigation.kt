@@ -1,12 +1,12 @@
-package com.example.wordline
+package com.example.worldline
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.wordline.ui.screens.diagram.DiagramScreen
-import com.example.wordline.ui.screens.settings.SettingsScreen
+import com.example.worldline.ui.screens.diagram.DiagramScreen
+import com.example.worldline.ui.screens.settings.SettingsScreen
 
 enum class Screens() {
     DIAGRAM,

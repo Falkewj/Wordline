@@ -1,5 +1,6 @@
 package com.example.worldline.ui.screens.diagram
 
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -67,9 +68,11 @@ fun DiagramScreen(
                     viewModel.updateCanvasSize(size.toSize())
                 }
                 .pointerInput(Unit) {
-                    detectTapGestures { offset ->
-                        viewModel.onLineTapped(offset)
-                    }
+                    detectDragGestures (
+                        onDrag = { _, dragAmount ->
+                            viewModel.pan(dragAmount)
+                        }
+                    )
                 }
         ) {
             for (instruction in viewModel.drawInstructions){ // TODO: drawline is temporary. Should use path probably

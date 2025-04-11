@@ -3,21 +3,25 @@ package com.example.worldline.data.model
 import android.util.Log
 import android.util.SizeF
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.platform.debugInspectorInfo
+import kotlin.math.atan
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 class VisibleArea(ratio: Float) {
     // NOTE: alternative move back to diagramviewmodel. Functional approach. Approach could be layering path alterations/morphs (generate visual paths -> morph to geodesics -> morph to ui canvas)
     //  z could be how path is affected by grav or z could be the grav of the worldline. have both with 4D vectors. An anchoring grid beneath worldline grid could also act as gravity, might be more representative
     //  of how gravity really works, so easier to wrap head around and work with - for now second grid is preferred solution. I really like the functional layered solution with an anchoring grid, and z to represent mass.
-    //  it makes sense in my head, it would be quite easy to test, and its a new approach for me and new stuff is why im here
+    //  it makes sense in my head, it would be quite easy to test, and its a new approach for me and new stuff is why im here.
+    //  Im leaning more towards 3D vectors now where the z axis is used in a displacement function. On second thought i also don't think an achoring grid is more "realistic" as the
+    //  points of the line isnt representive of the line but of the spacetime the line occupies and therefor it's actually more like the real world to store gravity there. I should probably stop thinking about this until relevant...
 
     // NOTE: Gravity could influence whats visible in the visible area with paths curving into it. Morph to geodesics first?
     //  Layer list would then look like: (morph to geodesics -> generate visual paths -> Morph to ui canvas).
 
-    // TODO: if above chosen: make botleft and topright pair. Delete initialUnitsOnY. adjust functions as needed (probably not much)
-
-    private val initialUnitsOnY = 10f
     private var botLeft = Offset(-1f,-1f)
-    private var topRight = Offset(initialUnitsOnY * ratio, initialUnitsOnY)
+    private var topRight = Offset(10f, 0f)
 
     fun inArea(path: Path): Pair<Offset, Offset>? {
 
@@ -51,7 +55,20 @@ class VisibleArea(ratio: Float) {
 //        NOTE: Wait until you know what type the pinch drag gesture returns
     }
 
-    fun updateRatio(ratio: Float){ // TODO: Rotate topright vector
+
+    // NOTE: Alternative make a single function that rescales. With default values on parameters equal to current values of visible area.
+    //  zoom, ratio change and scale would all use the same function to recalculate topright. Goes well with functional approach and getting rid of this class.
+    fun updateRatio(ratio: Float){
+        Log.d("ROTATION", topRight.toString())
+        val diagonal = topRight - botLeft
+
+        val rotationAngle = atan(1 / ratio) - atan(diagonal.y / diagonal.x)
+
+        topRight = Offset(
+            diagonal.x * cos(rotationAngle) - diagonal.y * sin(rotationAngle),
+            diagonal.x * sin(rotationAngle) + diagonal.y * cos(rotationAngle)
+        ) + botLeft
+        Log.d("ROTATION", topRight.toString())
 
     }
 
@@ -60,17 +77,17 @@ class VisibleArea(ratio: Float) {
         return SizeF(diagonalVector.x, diagonalVector.y)
     }
 
-    fun translate(toTranslate: Offset): Offset{
+    fun translateToExternal(toTranslate: Offset): Offset{
         return toTranslate - botLeft
     }
 
-    fun getGridLines(): List<Pair<Offset, Offset>>{ // NOTE: This works... but is it shitty and confusing? yes.. was just an experiment so do not use as is!!!!!. Rewrite to make gridlines independently of each other
+    fun translateToInternal(toTranslate: Offset): Offset{
+        return toTranslate + botLeft
+    }
+
+    fun getGridLines(): List<Pair<Offset, Offset>>{ // NOTE: This works... but is it shitty and confusing? yes.. was just an experiment so do not use as is!!!!!                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            -. Rewrite to make gridlines independently of each other
         val gridlines: MutableList<Pair<Offset, Offset>> = mutableListOf()
-//        val size = getSize()
-//        val offsetStep = Offset(
-//            x =
-//        )
-//        }
+
         val gridSequence = generateSequence(botLeft) {
             Offset(
                 x = Math.ceil(it.x.toDouble()).toFloat(),

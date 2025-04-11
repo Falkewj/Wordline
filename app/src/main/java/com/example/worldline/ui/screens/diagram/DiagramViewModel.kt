@@ -16,7 +16,7 @@ class DiagramViewModel() : ViewModel() {
     private var canvasSize: Size = Size.Zero
     private val visibleArea by lazy { VisibleArea(canvasSize.width/canvasSize.height) }
     private var referenceFrame: Path = Path(0f, 0f, Color.Blue, 5f)
-    private val nullLine: Path = Path(1f, 0f, Color.Yellow, 5f)
+    private val nullLine: Path = Path(1f, 0f, Color.Red, 5f)
     private val worldlines: MutableList<Path> = mutableListOf(referenceFrame, nullLine)
     var drawInstructions by mutableStateOf<List<DrawInstruction>>(listOf()) // NOTE: Triggers recomposition
         private set
@@ -28,6 +28,7 @@ class DiagramViewModel() : ViewModel() {
 
     fun updateCanvasSize(size: Size) {
         canvasSize = size
+        visibleArea.updateRatio(canvasSize.width/canvasSize.height)
         createDrawInstructions()
     }
 
@@ -37,7 +38,8 @@ class DiagramViewModel() : ViewModel() {
     }
 
     fun pan(panVector: Offset){
-        visibleArea.move(panVector)
+        val (scaleX, scaleY) = scale()
+        visibleArea.move(Offset(-1 * (panVector.x / scaleX), (panVector.y / scaleY)))
         createDrawInstructions()
     }
 
@@ -47,8 +49,8 @@ class DiagramViewModel() : ViewModel() {
 
         for(gridlines in visibleArea.getGridLines()){
             newDrawInstructions.add(DrawInstruction(
-                toCanvasOffset(gridlines.first),
-                toCanvasOffset(gridlines.second),
+                toExternalOffset(gridlines.first),
+                toExternalOffset(gridlines.second),
                 2f,
                 Color.Black
             ))
@@ -57,8 +59,8 @@ class DiagramViewModel() : ViewModel() {
         for(worldline in worldlines) {
             val (enterOffset, exitOffset) = visibleArea.inArea(worldline) ?: continue
             newDrawInstructions.add(DrawInstruction(
-                toCanvasOffset(enterOffset),
-                toCanvasOffset(exitOffset),
+                toExternalOffset(enterOffset),
+                toExternalOffset(exitOffset),
                 worldline.width,
                 worldline.color
             ))
@@ -70,19 +72,24 @@ class DiagramViewModel() : ViewModel() {
         // NOTE: Maybe move scaling here as well as gravity morphing of grid? Alternative make gravity a separate grid that spacetime is anchored to.
     }
 
-    private fun toCanvasOffset(internalOffset: Offset): Offset { // TODO: scale is not offset dependant. Move outside?
-        val size = visibleArea.getSize()
-        val scaleX = canvasSize.width / size.width
-        val scaleY = canvasSize.height / size.height
-        val translation = visibleArea.translate(internalOffset)
+    private fun toExternalOffset(internalOffset: Offset): Offset { // TODO: scale is not offset dependant. Move outside?
+        val (scaleX, scaleY) = scale()
+        val translation = visibleArea.translateToExternal(internalOffset)
 
         return Offset(translation.x * scaleX, canvasSize.height - (translation.y * scaleY))
     }
 
-    private fun toInternalOffset(canvasOffset: Offset): Offset {
+    private fun toInternalOffset(externalOffset: Offset): Offset {
 //        TODO: Opposite of toCanvasOffset but with single Offset.
-        val internalOffset = canvasOffset
-        return internalOffset
+//        NOTE: Below untested and quickly written
+        val (scaleX, scaleY) = scale()
+
+        return Offset(externalOffset.x / scaleX, canvasSize.height - (externalOffset.y / scaleY))
+    }
+
+    private fun scale(): Pair<Float, Float>{
+        val size = visibleArea.getSize()
+        return Pair(canvasSize.width / size.width, canvasSize.height / size.height)
     }
 
 
